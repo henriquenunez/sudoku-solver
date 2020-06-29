@@ -39,11 +39,19 @@ main_obj_t;
 //Runs on every subcell, updating it.
 void __update_sudoku_squares_numbers(main_obj_t* main_objs)
 {
+    int temp_color;
+    char temp_label[8];
+
     for(int i = 0 ; i < SUBCELL_N ; i++)
     {
-	/*something like thye following.
-	set_value(main_objs->subcells[i],
-		    get_color_at_vertex(main_objs->sudoku_graph, i))*/
+	//something like the following.
+	temp_color = get_color_at_vtx_graph(main_objs->sudoku_graph, i);
+	if(temp_color != -1)
+	{
+	    snprintf(temp_label, 7, "%d", temp_color);
+	    gtk_label_set_text(GTK_LABEL(main_objs->subcells[i]),
+				temp_label);
+	}
     }
 }
 
@@ -58,11 +66,9 @@ void __generate_button_clicked(main_obj_t* main_objs)
     char* active_text;
     printf("Generate button clicked!\n");
 
-    //TODO  memory problem related to difficulty_chooser_cbox.
-    //active_text = gtk_combo_box_text_get_active_text (main_objs->difficulty_chooser_cbox);
-    printf("Active text: %p\n", active_text);
-
-    active_text = "Medium";
+    active_text =
+    gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(main_objs->difficulty_chooser_cbox));
+    printf("Active text: %s\n", active_text);
 
     //GENERATE DEFAULTS TO MEDIUM FOR NOW...
     if(strcmp(active_text, "Medium") == 0)
@@ -71,21 +77,25 @@ void __generate_button_clicked(main_obj_t* main_objs)
 	predefined_squares = 10;
     }
 
+    printf("graph: %p\n", main_objs->sudoku_graph);
+
     //According to generate logic, will run through the entire graph randomly
     //and will try to assign random colors to the randomly selected vertex.
     while(predefined_squares)
     {
 	rand_color = (rand() % COLOR_NUMBER) + 1;
 	rand_vertex = rand() % SUBCELL_N;
-	if(put_color_at_vtx_graph(main_objs->sudoku_graph,
-				rand_vertex,
-				rand_color) == GR_OK) predefined_squares--;
+	    if(put_color_at_vtx_graph(main_objs->sudoku_graph,
+				    rand_vertex,
+				    rand_color) == GR_OK) predefined_squares--;
     }
 
-    //g_free(active_text);
+    g_free(active_text);
+
+    __update_sudoku_squares_numbers(main_objs);
 }
 
-//Changes iteration speed.
+    //Changes iteration speed.
 void __solver_speed_sbutton_changed(main_obj_t* main_objs)
 {
     printf("Solver speed spin changed!\n");
@@ -112,7 +122,7 @@ void __init_squares(main_obj_t* main_objs)
 							subcell_indexer);
 	#ifdef MAIN_DEBUG
 	printf("generated: %s\n", subcell_indexer);
-	gtk_label_set_text(GTK_LABEL(main_objs->subcells[f]), "aaa");
+	gtk_label_set_text(GTK_LABEL(main_objs->subcells[f]), subcell_indexer);
 	#else
 	    gtk_label_set_text(GTK_LABEL(main_objs->subcells[f]), "-");
 	#endif
@@ -143,7 +153,7 @@ void __main_init(main_obj_t* main_objs)
     //GENERATE BUTTON
     main_objs->generate_button = gtk_builder_get_object (main_objs->builder,
 						"sudoku_generate_button");
-    g_signal_connect (main_objs->generate_button,
+    g_signal_connect_swapped (main_objs->generate_button,
 			"clicked",
 			G_CALLBACK (__generate_button_clicked),
 			main_objs);
