@@ -5,100 +5,15 @@
 
 //Number of subcells a.k.a sudoku squares.
 #define SUBCELL_N 81
+#define SUBCELLS_PER_CELL 9
+#define SUBCELLS_PER_ROW 9
+#define SUBCELLS_PER_COL 9
 
-const char* subcell_id[] =
-{
-//Cell 0 0
-"subcell_0_0_0_0",//#0
-"subcell_0_0_0_1",//#1
-"subcell_0_0_0_2",//#2
-"subcell_0_0_1_0",//#3
-"subcell_0_0_1_1",//#4
-"subcell_0_0_1_2",//#5
-"subcell_0_0_2_0",//#6
-"subcell_0_0_2_1",//#7
-"subcell_0_0_2_2",//#8
-//Cell 0 1
-"subcell_0_1_0_0",//#9
-"subcell_0_1_0_1",//#10
-"subcell_0_1_0_2",//#11
-"subcell_0_1_1_0",//#12
-"subcell_0_1_1_1",//#13
-"subcell_0_1_1_2",//#14
-"subcell_0_1_2_0",//#15
-"subcell_0_1_2_1",//#16
-"subcell_0_1_2_2",//#17
-//Cell 0 2
-"subcell_0_2_0_0",//#18
-"subcell_0_2_0_1",//#19
-"subcell_0_2_0_2",//#20
-"subcell_0_2_1_0",//#21
-"subcell_0_2_1_1",//#22
-"subcell_0_2_1_2",//#23
-"subcell_0_2_2_0",//#24
-"subcell_0_2_2_1",//#25
-"subcell_0_2_2_2",//#26
-//Cell 1 0
-"subcell_1_0_0_0",//#27
-"subcell_1_0_0_1",//#28
-"subcell_1_0_0_2",//#29
-"subcell_1_0_1_0",//#30
-"subcell_1_0_1_1",//#31
-"subcell_1_0_1_2",//#32
-"subcell_1_0_2_0",//#33
-"subcell_1_0_2_1",//#34
-"subcell_1_0_2_2",//#35
-//Cell 1 1
-"subcell_1_1_0_0",//#36
-"subcell_1_1_0_1",//#37
-"subcell_1_1_0_2",//#38
-"subcell_1_1_1_0",//#39
-"subcell_1_1_1_1",//#40
-"subcell_1_1_1_2",//#41
-"subcell_1_1_2_0",//#42
-"subcell_1_1_2_1",//#43
-"subcell_1_1_2_2",//#44
-//Cell 1 2
-"subcell_1_2_0_0",//#45
-"subcell_1_2_0_1",//#46
-"subcell_1_2_0_2",//#47
-"subcell_1_2_1_0",//#48
-"subcell_1_2_1_1",//#49
-"subcell_1_2_1_2",//#50
-"subcell_1_2_2_0",//#51
-"subcell_1_2_2_1",//#52
-"subcell_1_2_2_2",//#53
-//Cell 2 0
-"subcell_2_0_0_0",//#54
-"subcell_2_0_0_1",//#55
-"subcell_2_0_0_2",//#56
-"subcell_2_0_1_0",//#57
-"subcell_2_0_1_1",//#58
-"subcell_2_0_1_2",//#59
-"subcell_2_0_2_0",//#60
-"subcell_2_0_2_1",//#61
-"subcell_2_0_2_2",//#62
-//Cell 2 1
-"subcell_2_1_0_0",//#63
-"subcell_2_1_0_1",//#64
-"subcell_2_1_0_2",//#65
-"subcell_2_1_1_0",//#66
-"subcell_2_1_1_1",//#67
-"subcell_2_1_1_2",//#68
-"subcell_2_1_2_0",//#69
-"subcell_2_1_2_1",//#70
-"subcell_2_1_2_2",//#71
-//Cell 2 2
-"subcell_2_2_0_0",//#72
-"subcell_2_2_0_1",//#73
-"subcell_2_2_0_2",//#74
-"subcell_2_2_1_0",//#75
-"subcell_2_2_1_1",//#76
-"subcell_2_2_1_2",//#77
-"subcell_2_2_2_0",//#78
-"subcell_2_2_2_1",//#79
-"subcell_2_2_2_2" //#80
-};
+/* Macros for index helping index var */
+#define M_FROM(F) ((int)(((int)(F/9))/3))
+#define N_FROM(F) (((int)(F/9))%3)
+#define I_FROM(F) ((int)((F%9)/3))
+#define J_FROM(F) (((int)F%9)%3)
 
 typedef
     struct
@@ -183,6 +98,28 @@ void __solve_button_clicked(main_obj_t* main_objs)
 }
 
 /* General functions */
+void __init_squares(main_obj_t* main_objs)
+{
+    char subcell_indexer[23];
+
+    for(int f = 0 ; f < SUBCELL_N ; f++)
+    {
+	snprintf(subcell_indexer,
+		    22,
+		    "subcell_%d_%d_%d_%d_label",
+		    M_FROM(f), N_FROM(f), I_FROM(f), J_FROM(f));
+	main_objs->subcells[f] = gtk_builder_get_object(main_objs->builder,
+							subcell_indexer);
+	#ifdef MAIN_DEBUG
+	printf("generated: %s\n", subcell_indexer);
+	gtk_label_set_text(GTK_LABEL(main_objs->subcells[f]), "aaa");
+	#else
+	    gtk_label_set_text(GTK_LABEL(main_objs->subcells[f]), "-");
+	#endif
+
+    }
+}
+
 void __main_init(main_obj_t* main_objs)
 {
     GError *error = NULL;
@@ -235,6 +172,71 @@ void __main_init(main_obj_t* main_objs)
 
 }
 
+void __graph_init(main_obj_t* main_objs)
+{
+    //Creates graph with vertex number equal as the subcell number.
+    main_objs->sudoku_graph = new_graph(ADJ_LIST, SUBCELL_N);
+
+    //Now, link vertexes that are related.
+    for(int f = 0 ; f < SUBCELL_N ; f++)
+    {
+
+	#ifdef MAIN_DEBUG
+	printf("LINKING SAME CELL:\n");
+	#endif
+
+	//Link subcells at the same cell.
+	for(int w = 0 ; w < SUBCELLS_PER_CELL ; w++)
+	{
+	   insert_edge_graph(main_objs->sudoku_graph,
+				f,
+				(M_FROM(f)*27) + (N_FROM(f)*9) + w);
+	    #ifdef MAIN_DEBUG
+	    printf("linking to: %d\n", (M_FROM(f)*27) + (N_FROM(f)*9) + w);
+	    #endif
+	}
+
+#ifdef MAIN_DEBUG
+	printf("LINKING SAME ROW:\n");
+	#endif
+
+	//Link subcells at the same row.
+	for(int n = 0 ; n < 3 ; n++) //Walking on n
+	{
+	    for(int j = 0 ; j < 3 ; j++) //Walking on j
+	    {
+		insert_edge_graph(main_objs->sudoku_graph,
+				f,
+				(M_FROM(f)*27) + (n*9) + I_FROM(f)*3 + j);
+	    #ifdef MAIN_DEBUG
+	    printf("linking to: %d\n", (M_FROM(f)*27) + (n*9) + I_FROM(f)*3 + j);
+	    #endif
+	    }
+	}
+
+	#ifdef MAIN_DEBUG
+	printf("LINKING SAME COLUMN:\n");
+	#endif
+
+	//Link subcells at the same column.
+	for(int m = 0 ; m < 3 ; m++) //Walking on m
+	{
+	    for(int i = 0 ; i < 3 ; i++) //Walking on i
+	    {
+		insert_edge_graph(main_objs->sudoku_graph,
+				f,
+				(m*27) + (N_FROM(f)*9) + i*3 + J_FROM(f));
+	    #ifdef MAIN_DEBUG
+	    printf("linking to: %d\n", (m*27) + (N_FROM(f)*9) + i*3 + J_FROM(f));
+	    #endif
+	    }
+	}
+	#ifdef MAIN_DEBUG
+	printf("\n\n\n");
+	#endif
+    }
+}
+
 //MAIN
 
 int main(int argc, char* argv[])
@@ -243,7 +245,11 @@ int main(int argc, char* argv[])
 
     gtk_init (&argc, &argv);
     __main_init(&main_objs);
+    __init_squares(&main_objs);
+    __graph_init(&main_objs);
     gtk_main();
+
+    delete_graph(main_objs.sudoku_graph);
 
     return 0;
 }

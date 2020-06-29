@@ -40,7 +40,7 @@ graph_err_t put_color_at_vtx_graph(GRAPH* this_graph,
 				    int some_color)
 {
     if (some_color < 1 || some_color > COLOR_NUMBER) return GR_COLOR_INVALID;
-    if (get_color_at_vertex(this_graph, a_vertex) != -1) return GR_VTX_COLORED;
+    if (get_color_at_vtx_graph(this_graph, a_vertex) != -1) return GR_VTX_COLORED;
 
     switch(some_color)
     {
@@ -92,13 +92,13 @@ graph_err_t update_color_list_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
     //Gets color, should be one of the previously defined macros, or 0x00
     color_t a_vertex_color = this_graph->color_vtx_list[a_vertex];
 
-    if(a_vertex_color == 0) return GR_VTX_NOT_COLORED; 
+    if(a_vertex_color == 0) return GR_VTX_NOT_COLORED;
 
     //Run on every vertex thats adjacent to 'a_vertex'
     for(int i = 0 ; i < adjacencies.size ; i++)
     {
 	curr_vertex = adjacencies.data[i];
-	this_graph->color_vtx_list[curr_vertex] = 
+	this_graph->color_vtx_list[curr_vertex] =
 		    this_graph->color_vtx_list[curr_vertex] & (~a_vertex_color);
     }
 

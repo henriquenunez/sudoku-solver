@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-g
+CFLAGS=-g -DMAIN_DEBUG
 LDFLAGS=-fsanitize=address
 
 BUILD_DIR=./obj
@@ -13,7 +13,7 @@ OBJS=
 all: dirs build
 
 build: graph.o
-	${CC} ${MCFLAGS} sudoku.c ${OBJS} -o ${BIN_DIR}/sudoku ${MLDFLAGS}
+	${CC} ${MCFLAGS} sudoku.c ${BUILD_DIR}/graph.o ${OBJS} -o ${BIN_DIR}/sudoku ${MLDFLAGS}
 
 tests:
 
