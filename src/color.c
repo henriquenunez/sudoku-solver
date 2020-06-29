@@ -2,7 +2,6 @@
 Graph coloring data structures and algorithms
 */
 
-#define COLOR_NUMBER 9 //We only work with 9 colors for now.
 
 //Bit masks for defining colors.
 #define COLOR_1 0b0000000000000001

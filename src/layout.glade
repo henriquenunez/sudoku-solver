@@ -4,9 +4,9 @@
   <requires lib="gtk+" version="3.22"/>
   <object class="GtkWindow" id="main_window">
     <property name="visible">True</property>
-    <property name="title">Auto Sudoku</property>
-    <property name="border-width">10</property>
     <property name="can_focus">False</property>
+    <property name="border_width">10</property>
+    <property name="title">Auto Sudoku</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -1057,6 +1057,7 @@
               <object class="GtkSpinButton" id="sudoku_solver_speed_spin_button">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="activates_default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
