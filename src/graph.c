@@ -276,7 +276,7 @@ void delete_graph(GRAPH* this_graph)
     free(this_graph);
 }
 
-graph_err_t insert_edge(GRAPH* this_graph, vertex_n src, vertex_n dest)
+graph_err_t insert_edge_graph(GRAPH* this_graph, vertex_n src, vertex_n dest)
 {
     if (this_graph->_type & ADJ_MATRIX)
     {
@@ -296,7 +296,7 @@ graph_err_t insert_edge(GRAPH* this_graph, vertex_n src, vertex_n dest)
     return GR_OK;
 }
 
-graph_err_t remove_edge(GRAPH* this_graph, vertex_n src, vertex_n dest)
+graph_err_t remove_edge_graph(GRAPH* this_graph, vertex_n src, vertex_n dest)
 {
     if (this_graph->_type & ADJ_MATRIX)
     {
