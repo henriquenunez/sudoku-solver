@@ -5,12 +5,15 @@ LDFLAGS=-fsanitize=address
 BUILD_DIR=./obj
 BIN_DIR=./bin
 
+MCFLAGS=${CFLAGS} `pkg-config --cflags gtk+-3.0`
+MLDFLAGS=${LDFLAGS} `pkg-config --libs gtk+-3.0`
+
 OBJS=
 
 all: dirs build
 
 build: graph.o
-	${CC} ${CFLAGS} main.c ${OBJS} -o ${BIN_DIR}/sudoku
+	${CC} ${MCFLAGS} sudoku.c ${OBJS} -o ${BIN_DIR}/sudoku ${MLDFLAGS}
 
 tests:
 

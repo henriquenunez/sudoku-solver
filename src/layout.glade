@@ -2,7 +2,10 @@
 <!-- Generated with glade 3.36.0 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
-  <object class="GtkWindow">
+  <object class="GtkWindow" id="main_window">
+    <property name="visible">True</property>
+    <property name="title">Auto Sudoku</property>
+    <property name="border-width">10</property>
     <property name="can_focus">False</property>
     <child>
       <object class="GtkBox">
@@ -1038,7 +1041,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="sudoku_generate_button">
                 <property name="label" translatable="yes">Generate</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
