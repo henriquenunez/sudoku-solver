@@ -32,6 +32,7 @@ void delete_graph(GRAPH*);
 graph_err_t put_color_at_vtx_graph(GRAPH*, vertex_n, int color);
 int get_color_at_vtx_graph(GRAPH*, vertex_n); //returns -1 in the undefined case.
 graph_err_t auto_color_graph(GRAPH*);
+graph_err_t brute_force_solver(GRAPH*);
 
 #endif
 

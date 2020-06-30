@@ -83,7 +83,7 @@ graph_err_t put_color_at_vtx_graph(GRAPH* this_graph,
 
     return GR_OK;
 }
-
+/*
 graph_err_t update_color_list_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
 {
     VECTOR adjacencies = __get_adjacent_vtxs_graph(this_graph, a_vertex);
