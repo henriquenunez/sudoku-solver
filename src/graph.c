@@ -254,7 +254,14 @@ GRAPH* new_graph(graph_type _type, int vertex_num)
     ret_ref->adj_list = new_adj_list(vertex_num);
     }
 
-    ret_ref->color_vtx_list = (color_t*) calloc(vertex_num, sizeof(color_t));
+    ret_ref->color_vtx_list = (color_t*) malloc(vertex_num * sizeof(color_t));
+
+    //Setting color list for each node.
+    for(int i = 0 ; i < vertex_num ; i++)
+    {
+	ret_ref->color_vtx_list[i] = 0b0000000111111111;
+    }
+
     ret_ref->size = vertex_num;
 
     return ret_ref;

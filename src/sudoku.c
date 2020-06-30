@@ -187,6 +187,13 @@ void __graph_init(main_obj_t* main_objs)
     //Creates graph with vertex number equal as the subcell number.
     main_objs->sudoku_graph = new_graph(ADJ_LIST, SUBCELL_N);
 
+    //Only needs index.
+    #define ITER_CELL(A, B) ((M_FROM(A)*27) + (N_FROM(A)*9) + B)
+    //Runs on squares (left and right, thus requires 2 indexes.)
+    #define ITER_ROW(A, B, C) ((M_FROM(A)*27) + (B*9) + I_FROM(A)*3 + C)
+    //Runs on squares (upper and lower, thus requires 2 indexes.)
+    #define ITER_COL(A, B, C) ((B*27) + (N_FROM(A)*9) + C*3 + J_FROM(A))
+
     //Now, link vertexes that are related.
     for(int f = 0 ; f < SUBCELL_N ; f++)
     {
@@ -198,15 +205,16 @@ void __graph_init(main_obj_t* main_objs)
 	//Link subcells at the same cell.
 	for(int w = 0 ; w < SUBCELLS_PER_CELL ; w++)
 	{
-	   insert_edge_graph(main_objs->sudoku_graph,
+	    if(ITER_CELL(f, w) == f) continue; //Dont make loops.
+	    insert_edge_graph(main_objs->sudoku_graph,
 				f,
-				(M_FROM(f)*27) + (N_FROM(f)*9) + w);
+				ITER_CELL(f, w));
 	    #ifdef MAIN_DEBUG
-	    printf("linking to: %d\n", (M_FROM(f)*27) + (N_FROM(f)*9) + w);
+	    printf("linking to: %d\n", ITER_CELL(f, w));
 	    #endif
 	}
 
-#ifdef MAIN_DEBUG
+	#ifdef MAIN_DEBUG
 	printf("LINKING SAME ROW:\n");
 	#endif
 
@@ -215,11 +223,12 @@ void __graph_init(main_obj_t* main_objs)
 	{
 	    for(int j = 0 ; j < 3 ; j++) //Walking on j
 	    {
+		if(ITER_ROW(f, n, j) == f) continue; //Dont make loops.
 		insert_edge_graph(main_objs->sudoku_graph,
 				f,
-				(M_FROM(f)*27) + (n*9) + I_FROM(f)*3 + j);
+				ITER_ROW(f, n, j));
 	    #ifdef MAIN_DEBUG
-	    printf("linking to: %d\n", (M_FROM(f)*27) + (n*9) + I_FROM(f)*3 + j);
+	    printf("linking to: %d\n", ITER_ROW(f, n, j));
 	    #endif
 	    }
 	}
@@ -233,11 +242,12 @@ void __graph_init(main_obj_t* main_objs)
 	{
 	    for(int i = 0 ; i < 3 ; i++) //Walking on i
 	    {
+		if(ITER_COL(f, m, i) == f) continue; //Dont make loops.
 		insert_edge_graph(main_objs->sudoku_graph,
 				f,
-				(m*27) + (N_FROM(f)*9) + i*3 + J_FROM(f));
+				ITER_COL(f, m, i));
 	    #ifdef MAIN_DEBUG
-	    printf("linking to: %d\n", (m*27) + (N_FROM(f)*9) + i*3 + J_FROM(f));
+	    printf("linking to: %d\n", ITER_COL(f, m, i));
 	    #endif
 	    }
 	}
