@@ -115,13 +115,14 @@ graph_err_t put_color_at_vtx_graph(GRAPH* this_graph,
     }
 
     graph_err_t ret_code;
+}
 
 graph_err_t reset_color_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
 {
 	this_graph->color_vtx_list[a_vertex] = 0;
 	return GR_OK;
 }
-
+/*
 graph_err_t update_color_list_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
 {
     VECTOR adjacencies = __get_adjacent_vtxs_graph(this_graph, a_vertex);
@@ -145,12 +146,14 @@ graph_err_t update_color_list_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
 //	printf("\t>>Color unavailable\n");
 	ret_code = GR_COLOR_INVALID;
     }
-/*
+
     printf("Color at vertex %d is: %x\n", a_vertex,
-				    this_graph->color_vtx_list[a_vertex]);*/
+				    this_graph->color_vtx_list[a_vertex]);
 
     return GR_OK;
 }
+*/
+
 graph_err_t auto_color_vertex_graph(GRAPH* this_graph, vertex_n a_vertex)
 {
     //Based on previously generated list, will apply some color to given vtx.
@@ -238,5 +241,6 @@ graph_err_t brute_force_solver(GRAPH* this_graph)
 
 graph_err_t welsh_powell_solver(GRAPH* this_graph)
 {
-
+	return GR_OK;
 }
+
