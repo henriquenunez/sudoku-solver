@@ -228,7 +228,7 @@ VECTOR __get_adjacent_vtxs_graph(GRAPH* this_graph, vertex_n a_vertex)
     //We will be only using adjacence list on this project.
     if (this_graph->_type & ADJ_LIST)
     {
-	ret_vec = this_graph->adj_list.vertexes[a_vertex];
+		ret_vec = this_graph->adj_list.vertexes[a_vertex];
     }
     else if(this_graph->_type & ADJ_MATRIX)
 	;

@@ -12,7 +12,7 @@ OBJS=
 
 all: dirs build
 
-build: graph.o
+build: graph.o 
 	${CC} ${MCFLAGS} sudoku.c ${BUILD_DIR}/graph.o ${OBJS} -o ${BIN_DIR}/sudoku ${MLDFLAGS}
 
 tests:
@@ -31,4 +31,3 @@ clean:
 
 graph.o:
 	${CC} ${CFLAGS} -c graph.c -o ${BUILD_DIR}/graph.o ${LDFLAGS}
-

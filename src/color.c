@@ -84,6 +84,12 @@ graph_err_t put_color_at_vtx_graph(GRAPH* this_graph,
     return GR_OK;
 }
 
+graph_err_t reset_color_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
+{
+	this_graph->color_vtx_list[a_vertex] = 0;
+	return GR_OK;
+}
+
 graph_err_t update_color_list_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
 {
     VECTOR adjacencies = __get_adjacent_vtxs_graph(this_graph, a_vertex);
@@ -97,12 +103,86 @@ graph_err_t update_color_list_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
     //Run on every vertex thats adjacent to 'a_vertex'
     for(int i = 0 ; i < adjacencies.size ; i++)
     {
-	curr_vertex = adjacencies.data[i];
-	this_graph->color_vtx_list[curr_vertex] =
+		curr_vertex = adjacencies.data[i];
+		this_graph->color_vtx_list[curr_vertex] =
 		    this_graph->color_vtx_list[curr_vertex] & (~a_vertex_color);
     }
 
     return GR_OK;
 }
 
+graph_err_t brute_force_solver(GRAPH* this_graph)
+{
+	// Backtracking algorithm (https://en.wikipedia.org/wiki/Sudoku_solving_algorithms)
+	VECTOR adjacencies;
+	vertex_n other_vertex;
+	int this_color;
+	int other_color;
 
+	// For each vertex
+	for(int i = 0; i < this_graph->size ; i++)
+	{
+		adjacencies = __get_adjacent_vtxs_graph(this_graph, i);
+		this_color = get_color_at_vtx_graph(this_graph, i);
+		this_color == -1? this_color = 0 : this_color;
+		
+		// Return to previous vertex, maximum value for this vertex reached
+		if(this_color+1>9)
+		{
+			// Reset this vertex
+			reset_color_at_vtx_graph(this_graph, i);
+			i-=2;
+			// No solution found
+			if(i<-1)
+				return GR_NO_SOLUTION;
+			// Return to previous vertex
+			continue;
+		}
+
+		// Find colors that cant be used on this vertex
+		int8_t colors_blocked[10] = {0};
+		for(int j = 0; j < adjacencies.size ; j++)
+		{
+			other_vertex = adjacencies.data[j];
+			// Dont check this vertex
+			if(other_vertex == i)
+				continue;
+
+			other_color = get_color_at_vtx_graph(this_graph, other_vertex);
+			if(other_color != -1)
+				colors_blocked[other_color] = 1;
+		}
+		
+		// Update value of this vertex 
+		for(int j = this_color+1; j <= 9 ; j++)
+		{
+			// For each adjacency
+			if(colors_blocked[j]==0)
+			{
+				// Change color of this vertex
+				reset_color_at_vtx_graph(this_graph, i);
+				put_color_at_vtx_graph(this_graph, i, j);
+				break;
+			}
+
+			// Could not find possible value for this vertex
+			if(j==9)
+			{
+				// Reset this vertex
+				reset_color_at_vtx_graph(this_graph, i);
+				i-=2;
+				// No solution found
+				if(i<-1)
+					return GR_NO_SOLUTION;
+				// Return to previous vertex
+				continue;
+			}
+		}
+	}
+	return GR_OK;
+}
+
+graph_err_t welsh_powell_solver(GRAPH* this_graph)
+{
+
+}

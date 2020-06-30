@@ -10,7 +10,8 @@ typedef enum
     GR_VTX_OUT_BOUNDS,
     GR_VTX_COLORED,
     GR_VTX_NOT_COLORED,
-    GR_COLOR_INVALID
+    GR_COLOR_INVALID,
+    GR_NO_SOLUTION
 } graph_err_t;
 
 typedef unsigned char graph_type;

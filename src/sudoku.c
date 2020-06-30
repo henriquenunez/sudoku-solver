@@ -19,19 +19,19 @@ typedef
     struct
     {
         GObject *window;
-	GtkBuilder *builder;
+		GtkBuilder *builder;
 
-	//Widgets
-   	GObject *generate_button; //Button
-   	GObject *difficulty_chooser_cbox; //Combo box
-   	GObject *solver_speed_sbutton; //Spin button
-   	GObject *solve_button; //Button
-   	GObject *subcells[SUBCELL_N]; //Pointers to subcells.
+		//Widgets
+		GObject *generate_button; //Button
+		GObject *difficulty_chooser_cbox; //Combo box
+		GObject *solver_speed_sbutton; //Spin button
+		GObject *solve_button; //Button
+		GObject *subcells[SUBCELL_N]; //Pointers to subcells.
 
-	unsigned int delay; //Execution delay.
+		unsigned int delay; //Execution delay.
 
-	//Graph related.
-	GRAPH* sudoku_graph;
+		//Graph related.
+		GRAPH* sudoku_graph;
 
     }
 main_obj_t;
@@ -44,14 +44,14 @@ void __update_sudoku_squares_numbers(main_obj_t* main_objs)
 
     for(int i = 0 ; i < SUBCELL_N ; i++)
     {
-	//something like the following.
-	temp_color = get_color_at_vtx_graph(main_objs->sudoku_graph, i);
-	if(temp_color != -1)
-	{
-	    snprintf(temp_label, 7, "%d", temp_color);
-	    gtk_label_set_text(GTK_LABEL(main_objs->subcells[i]),
-				temp_label);
-	}
+		//something like the following.
+		temp_color = get_color_at_vtx_graph(main_objs->sudoku_graph, i);
+		if(temp_color != -1)
+		{
+			snprintf(temp_label, 7, "%d", temp_color);
+			gtk_label_set_text(GTK_LABEL(main_objs->subcells[i]),
+					temp_label);
+		}
     }
 }
 
@@ -76,8 +76,6 @@ void __generate_button_clicked(main_obj_t* main_objs)
 	//Sets medium parameters.
 	predefined_squares = 10;
     }
-
-    printf("graph: %p\n", main_objs->sudoku_graph);
 
     //According to generate logic, will run through the entire graph randomly
     //and will try to assign random colors to the randomly selected vertex.
@@ -104,7 +102,9 @@ void __solver_speed_sbutton_changed(main_obj_t* main_objs)
 //This function will run the colouring algorithm.
 void __solve_button_clicked(main_obj_t* main_objs)
 {
-    printf("Solve button clicked!\n");
+	if(brute_force_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
+		printf("No solution found.\n");
+    __update_sudoku_squares_numbers(main_objs);
 }
 
 /* General functions */
@@ -161,7 +161,7 @@ void __main_init(main_obj_t* main_objs)
     //SOLVE BUTTON
     main_objs->solve_button = gtk_builder_get_object (main_objs->builder,
 						"sudoku_solve_button");
-    g_signal_connect (main_objs->solve_button,
+    g_signal_connect_swapped (main_objs->solve_button,
 			"clicked",
 			G_CALLBACK (__solve_button_clicked),
 			main_objs);
@@ -253,7 +253,7 @@ int main(int argc, char* argv[])
 {
     main_obj_t main_objs;
 
-    gtk_init (&argc, &argv);
+    gtk_init(&argc, &argv);
     __main_init(&main_objs);
     __init_squares(&main_objs);
     __graph_init(&main_objs);
