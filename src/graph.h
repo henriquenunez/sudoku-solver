@@ -7,6 +7,7 @@ typedef int color_t;
 typedef enum
 {
     GR_OK,
+    GR_ERROR,
     GR_VTX_OUT_BOUNDS,
     GR_VTX_COLORED,
     GR_VTX_NOT_COLORED,

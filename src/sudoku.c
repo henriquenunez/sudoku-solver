@@ -102,8 +102,12 @@ void __solver_speed_sbutton_changed(main_obj_t* main_objs)
 //This function will run the colouring algorithm.
 void __solve_button_clicked(main_obj_t* main_objs)
 {
-	if(brute_force_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
-		printf("No solution found.\n");
+	//if(brute_force_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
+	//	printf("No solution found.\n");
+	//if(welsh_powell_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
+	//	printf("No solution found.\n");
+	genetic_algorithm_solver(main_objs->sudoku_graph);
+
     __update_sudoku_squares_numbers(main_objs);
 }
 
