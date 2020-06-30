@@ -35,6 +35,35 @@ int get_color_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
     return -1;
 }
 
+graph_err_t update_color_list_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
+{
+    VECTOR adjacencies = __get_adjacent_vtxs_graph(this_graph, a_vertex);
+    vertex_n curr_vertex;
+
+    if(get_color_at_vtx_graph(this_graph, a_vertex) == -1) return GR_VTX_NOT_COLORED;
+
+    //Gets color, should be one of the previously defined macros.
+    color_t a_vertex_color = this_graph->color_vtx_list[a_vertex];
+
+    //Run on every vertex thats adjacent to 'a_vertex'
+    for(int i = 0 ; i < adjacencies.size ; i++)
+    {
+	curr_vertex = adjacencies.data[i];
+
+	printf("Vertex %d colors: %x\n", curr_vertex,
+		this_graph->color_vtx_list[curr_vertex]);
+	printf("Removing color %x at vertex %d\n", a_vertex_color, curr_vertex);
+
+	this_graph->color_vtx_list[curr_vertex] =
+		    this_graph->color_vtx_list[curr_vertex] & (~a_vertex_color);
+	printf("after >> Vertex %d colors: %x\n", curr_vertex,
+		this_graph->color_vtx_list[curr_vertex]);
+
+    }
+
+    return GR_OK;
+}
+
 graph_err_t put_color_at_vtx_graph(GRAPH* this_graph,
 				    vertex_n a_vertex,
 				    int some_color)
@@ -378,3 +407,5 @@ graph_err_t genetic_algorithm_solver(GRAPH* this_graph)
 	else
 		return GR_NO_SOLUTION;
 }
+*/
+

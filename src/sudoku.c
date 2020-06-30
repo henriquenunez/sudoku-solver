@@ -209,7 +209,11 @@ void __graph_init(main_obj_t* main_objs)
 	//Link subcells at the same cell.
 	for(int w = 0 ; w < SUBCELLS_PER_CELL ; w++)
 	{
-	    if(ITER_CELL(f, w) == f) continue; //Dont make loops.
+	    if(ITER_CELL(f, w) == f)
+	    {
+		printf("Loop on cell.\n");
+		continue; //Dont make loops.
+	    }
 	    insert_edge_graph(main_objs->sudoku_graph,
 				f,
 				ITER_CELL(f, w));
@@ -227,7 +231,11 @@ void __graph_init(main_obj_t* main_objs)
 	{
 	    for(int j = 0 ; j < 3 ; j++) //Walking on j
 	    {
-		if(ITER_ROW(f, n, j) == f) continue; //Dont make loops.
+		if(ITER_ROW(f, n, j) == f)
+		{
+		    printf("Loop on row.\n");
+		    continue; //Dont make loops.
+		}
 		insert_edge_graph(main_objs->sudoku_graph,
 				f,
 				ITER_ROW(f, n, j));
@@ -246,8 +254,13 @@ void __graph_init(main_obj_t* main_objs)
 	{
 	    for(int i = 0 ; i < 3 ; i++) //Walking on i
 	    {
-		if(ITER_COL(f, m, i) == f) continue; //Dont make loops.
-		insert_edge_graph(main_objs->sudoku_graph,
+		if(ITER_COL(f, m, i) == f)
+		{
+		    printf("Loop on column.\n\n\n");
+		    continue; //Dont make loops.
+		}
+
+	    insert_edge_graph(main_objs->sudoku_graph,
 				f,
 				ITER_COL(f, m, i));
 	    #ifdef MAIN_DEBUG
