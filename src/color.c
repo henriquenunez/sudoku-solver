@@ -50,20 +50,100 @@ graph_err_t update_color_list_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
     {
 	curr_vertex = adjacencies.data[i];
 
-	printf("Vertex %d colors: %x\n", curr_vertex,
+/*	printf("Vertex %d colors: %x\n", curr_vertex,
 		this_graph->color_vtx_list[curr_vertex]);
 	printf("Removing color %x at vertex %d\n", a_vertex_color, curr_vertex);
-
+*/
 	this_graph->color_vtx_list[curr_vertex] =
 		    this_graph->color_vtx_list[curr_vertex] & (~a_vertex_color);
-	printf("after >> Vertex %d colors: %x\n", curr_vertex,
+/*	printf("after >> Vertex %d colors: %x\n", curr_vertex,
 		this_graph->color_vtx_list[curr_vertex]);
+*/
 
     }
 
     return GR_OK;
 }
 
+
+graph_err_t put_color_at_vtx_graph(GRAPH* this_graph,
+		    vertex_n a_vertex,
+		    int some_color)
+{
+    if (some_color < 1 || some_color > COLOR_NUMBER) return GR_COLOR_INVALID;
+    if (get_color_at_vtx_graph(this_graph, a_vertex) != -1) return GR_VTX_COLORED;
+    color_t temp_color = 0x0000;
+
+    /*printf("Colors at vertex %d : %x\n", a_vertex,
+    this_graph->color_vtx_list[a_vertex]);*/
+
+    switch(some_color)
+    {
+    case 1:
+        temp_color = COLOR_1;
+        break;
+
+    case 2:
+        temp_color = COLOR_2;
+        break;
+
+    case 3:
+        temp_color = COLOR_3;
+        break;
+
+    case 4:
+        temp_color = COLOR_4;
+        break;
+
+    case 5:
+        temp_color = COLOR_5;
+        break;
+
+    case 6:
+        temp_color = COLOR_6;
+        break;
+
+    case 7:
+        temp_color = COLOR_7;
+        break;
+
+    case 8:
+        temp_color = COLOR_8;
+        break;
+
+    case 9:
+        temp_color = COLOR_9;
+        break;
+    }
+
+    graph_err_t ret_code;
+
+    //printf("\tTrying to put color %x >> ", temp_color);
+
+    //Now, let's check whether color can be applied or not.
+    if(this_graph->color_vtx_list[a_vertex] & temp_color)
+    {
+    //Has this color on availability list.
+    this_graph->color_vtx_list[a_vertex] = temp_color;
+
+        printf("Color at vertex %d is: %x\n", a_vertex,
+		    this_graph->color_vtx_list[a_vertex]);
+    //Update adjacent nodes.
+    update_color_list_at_vtx_graph(this_graph, a_vertex);
+    ret_code = GR_OK;
+    }
+    else
+    {
+//  printf("\t>>Color unavailable\n");
+    ret_code = GR_COLOR_INVALID;
+    }
+/*
+    printf("Color at vertex %d is: %x\n", a_vertex,
+		    this_graph->color_vtx_list[a_vertex]);*/
+
+    return GR_OK;
+}
+/*
 graph_err_t put_color_at_vtx_graph(GRAPH* this_graph,
 				    vertex_n a_vertex,
 				    int some_color)
@@ -112,32 +192,16 @@ graph_err_t put_color_at_vtx_graph(GRAPH* this_graph,
 
     return GR_OK;
 }
-/*
-graph_err_t update_color_list_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
-{
-    VECTOR adjacencies = __get_adjacent_vtxs_graph(this_graph, a_vertex);
-    vertex_n curr_vertex;
-
-    //Gets color, should be one of the previously defined macros, or 0x00
-    color_t a_vertex_color = this_graph->color_vtx_list[a_vertex];
-
-    if(a_vertex_color == 0) return GR_VTX_NOT_COLORED;
-
-    //Run on every vertex thats adjacent to 'a_vertex'
-    for(int i = 0 ; i < adjacencies.size ; i++)
-    {
-	curr_vertex = adjacencies.data[i];
-	this_graph->color_vtx_list[curr_vertex] =
-		    this_graph->color_vtx_list[curr_vertex] & (~a_vertex_color);
-    }
-
-    return GR_OK;
-}
-
+*/
 graph_err_t reset_color_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
 {
 	this_graph->color_vtx_list[a_vertex] = 0;
 	return GR_OK;
+}
+
+graph_err_t color_solver(GRAPH* this_graph)
+{
+    return GR_OK;
 }
 
 graph_err_t brute_force_solver(GRAPH* this_graph)
@@ -154,7 +218,7 @@ graph_err_t brute_force_solver(GRAPH* this_graph)
 		adjacencies = __get_adjacent_vtxs_graph(this_graph, i);
 		this_color = get_color_at_vtx_graph(this_graph, i);
 		this_color == -1? this_color = 0 : this_color;
-		
+
 		// Return to previous vertex, maximum value for this vertex reached
 		if(this_color+1>9)
 		{
@@ -182,8 +246,8 @@ graph_err_t brute_force_solver(GRAPH* this_graph)
 			if(other_color != -1)
 				colors_blocked[other_color] = 1;
 		}
-		
-		// Update value of this vertex 
+
+		// Update value of this vertex
 		for(int j = this_color+1; j <= 9 ; j++)
 		{
 			// For each adjacency
@@ -407,5 +471,5 @@ graph_err_t genetic_algorithm_solver(GRAPH* this_graph)
 	else
 		return GR_NO_SOLUTION;
 }
-*/
+
 

@@ -18,12 +18,14 @@
 typedef
     struct
     {
+	int generated;
         GObject *window;
 		GtkBuilder *builder;
 
 		//Widgets
 		GObject *generate_button; //Button
 		GObject *difficulty_chooser_cbox; //Combo box
+		GObject *algo_chooser_cbox; //Combo box
 		GObject *solver_speed_sbutton; //Spin button
 		GObject *solve_button; //Button
 		GObject *subcells[SUBCELL_N]; //Pointers to subcells.
@@ -66,15 +68,27 @@ void __generate_button_clicked(main_obj_t* main_objs)
     char* active_text;
     printf("Generate button clicked!\n");
 
+    if(main_objs->generated) return;
+
+    main_objs->generated = 1;
+
     active_text =
-    gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(main_objs->difficulty_chooser_cbox));
+	gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(main_objs->difficulty_chooser_cbox));
     printf("Active text: %s\n", active_text);
 
     //GENERATE DEFAULTS TO MEDIUM FOR NOW...
     if(strcmp(active_text, "Medium") == 0)
     {
 	//Sets medium parameters.
-	predefined_squares = 10;
+	predefined_squares = 17;
+    }
+    else if(strcmp(active_text, "Easy") == 0)
+    {
+	predefined_squares = 25;
+    }
+    else if(strcmp(active_text, "Hard") == 0)
+    {
+	predefined_squares = 9;
     }
 
     //According to generate logic, will run through the entire graph randomly
@@ -102,11 +116,27 @@ void __solver_speed_sbutton_changed(main_obj_t* main_objs)
 //This function will run the colouring algorithm.
 void __solve_button_clicked(main_obj_t* main_objs)
 {
-	//if(brute_force_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
-	//	printf("No solution found.\n");
-	//if(welsh_powell_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
-	//	printf("No solution found.\n");
-	genetic_algorithm_solver(main_objs->sudoku_graph);
+    char* active_text;
+
+    active_text =
+	gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(main_objs->algo_chooser_cbox));
+    printf("Active text: %s\n", active_text);
+
+    if(strcmp(active_text, "Brute Force") == 0)
+    {
+	printf("brutoo");
+	if(brute_force_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
+	    printf("No solution found.\n");
+    }
+    else if(strcmp(active_text, "Graph Coloring") == 0)
+    {
+	printf("espertoo");
+	if(color_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
+	    printf("No solution found.\n");
+
+    }
+
+    g_free(active_text);
 
     __update_sudoku_squares_numbers(main_objs);
 }
@@ -124,19 +154,15 @@ void __init_squares(main_obj_t* main_objs)
 		    M_FROM(f), N_FROM(f), I_FROM(f), J_FROM(f));
 	main_objs->subcells[f] = gtk_builder_get_object(main_objs->builder,
 							subcell_indexer);
-	#ifdef MAIN_DEBUG
-	printf("generated: %s\n", subcell_indexer);
-	gtk_label_set_text(GTK_LABEL(main_objs->subcells[f]), subcell_indexer);
-	#else
-	    gtk_label_set_text(GTK_LABEL(main_objs->subcells[f]), "-");
-	#endif
-
+	gtk_label_set_text(GTK_LABEL(main_objs->subcells[f]), "-");
     }
 }
 
 void __main_init(main_obj_t* main_objs)
 {
     GError *error = NULL;
+
+    main_objs->generated = 0;
 
     main_objs->builder = gtk_builder_new ();
     if (gtk_builder_add_from_file (main_objs->builder, "layout.glade", &error) == 0)
@@ -184,6 +210,10 @@ void __main_init(main_obj_t* main_objs)
 		gtk_builder_get_object (main_objs->builder,
 					"sudoku_difficulty_chooser_combo_box");
 
+    //DIFFICULTY COMBO BOX
+    main_objs->algo_chooser_cbox =
+		gtk_builder_get_object (main_objs->builder,
+					"sudoku_algorithm_chooser_combo_box");
 }
 
 void __graph_init(main_obj_t* main_objs)
@@ -203,7 +233,7 @@ void __graph_init(main_obj_t* main_objs)
     {
 
 	#ifdef MAIN_DEBUG
-	printf("LINKING SAME CELL:\n");
+	printf("%d LINKING SAME CELL:\n", f);
 	#endif
 
 	//Link subcells at the same cell.
