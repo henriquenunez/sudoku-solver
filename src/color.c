@@ -39,20 +39,86 @@ int count_adj_colored(GRAPH* this_graph, vertex_n a_vertex)
     vertex_n curr_vertex;
     color_t a_vertex_color;
     int count = 0;
+/*
+    a_vertex_color = get_color_at_vtx_graph(this_graph, a_vertex);
 
-    if((a_vertex_color = get_color_at_vtx_graph(this_graph, a_vertex)) == 0)
-	return GR_VTX_NOT_COLORED;
-
+    if(a_vertex_color == 0)
+	return -1;
+*/
     //Run on every vertex thats adjacent to 'a_vertex'
     for(int i = 0 ; i < adjacencies.size ; i++)
     {
 	curr_vertex = adjacencies.data[i];
-	printf("Curr vertex: %d", curr_vertex);
+/*	#ifdef DEBUG_COLOR_SOLVE
+	printf("Curr vertex: %d\n", curr_vertex);
+	#endif*/
 	//If adj is colored, increase count.
 	if(get_color_at_vtx_graph(this_graph, curr_vertex) != 0) count++;
     }
 
     return count;
+}
+
+int count_available_colors(GRAPH* this_graph, vertex_n a_vertex)
+{
+    VECTOR adjacencies = __get_adjacent_vtxs_graph(this_graph, a_vertex);
+    vertex_n curr_vertex;
+    color_t a_vertex_color;
+    int colors_avail[COLOR_NUMBER] = {1,2,3,4,5,6,7,8,9};
+    int count = 0;
+    int aux;
+
+    //Run on every vertex thats adjacent to 'a_vertex'
+    for(int i = 0 ; i < adjacencies.size ; i++)
+    {
+	curr_vertex = adjacencies.data[i];
+	aux = get_color_at_vtx_graph(this_graph, curr_vertex);
+	if(aux == 0) continue;
+	if(aux > COLOR_NUMBER) return -2; //Colored with more than 9. No solution.
+	//Zero list of availability.
+	colors_avail[aux - 1] = 0;
+    }
+
+    //Count list of availability.
+    for(int j = 0 ; j < COLOR_NUMBER ; j++)
+    {
+	if (colors_avail[j] > 0) count++;
+    }
+
+    return count;
+}
+
+int get_available_color(GRAPH* this_graph, vertex_n a_vertex)
+{
+    VECTOR adjacencies = __get_adjacent_vtxs_graph(this_graph, a_vertex);
+    vertex_n curr_vertex;
+    color_t a_vertex_color;
+    int colors_avail[COLOR_NUMBER] = {1,2,3,4,5,6,7,8,9};
+    int ret_color;
+    int aux;
+
+    if(count_available_colors(this_graph, a_vertex) > 1)
+    {
+	return -1;
+    }
+
+    //Run on every vertex thats adjacent to 'a_vertex'
+    for(int i = 0 ; i < adjacencies.size ; i++)
+    {
+	curr_vertex = adjacencies.data[i];
+	aux = get_color_at_vtx_graph(this_graph, curr_vertex);
+	if(aux == 0) continue;
+	//Zero list of availability.
+	colors_avail[aux - 1] = 0;
+    }
+
+    //Find only color in list.
+    for(int j = 0 ; j < COLOR_NUMBER ; j++)
+    {
+	if (colors_avail[j] > 0) ret_color = colors_avail[j];
+    }
+
+    return ret_color;
 }
 
 graph_err_t update_color_list_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
@@ -89,13 +155,28 @@ graph_err_t color_solver(GRAPH* this_graph)
 	int color_number = 1;
 	int saturation_dgree = -1, tempdgree; //The lowest, the most saturated.
 	int index = -1;
+	int color_available = -1;
 
 	for(int i = 0 ; i < this_graph->size ; i++)
 	{
-	    if(get_color_at_vtx_graph(this_graph, i) == 0) //Not colored.
+	    if(get_color_at_vtx_graph(this_graph, i) == 0) //If not colored.
 	    {
 		tempdgree =
 		    count_adj_colored(this_graph, i);
+
+		color_available = get_available_color(this_graph, i);
+
+		if(color_available != -1)
+		{
+		    if(color_available == -2) return GR_NO_SOLUTION;
+		    //Then theres only one color available.
+		    put_color_at_vtx_graph(this_graph, i, color_available);
+		    break;
+		}
+
+		#ifdef DEBUG_COLOR_SOLVE
+		printf("Degree %d of vertex %d\n", tempdgree, i);
+		#endif
 
 		if(tempdgree > saturation_dgree)
 		{
@@ -109,6 +190,10 @@ graph_err_t color_solver(GRAPH* this_graph)
 	    }
 	}
 
+	#ifdef DEBUG_COLOR_SOLVE
+	printf("Convergency: degree %d of vertex %d\n", tempdgree, index);
+	#endif
+	if(index != -1)
 	while(put_color_at_vtx_graph(this_graph, index, color_number) != GR_OK)
 	{
 	    color_number++;
