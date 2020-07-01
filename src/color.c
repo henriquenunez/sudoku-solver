@@ -88,13 +88,13 @@ int count_available_colors(GRAPH* this_graph, vertex_n a_vertex)
     return count;
 }
 
-int get_available_color(GRAPH* this_graph, vertex_n a_vertex)
+int get_first_available_color(GRAPH* this_graph, vertex_n a_vertex)
 {
     VECTOR adjacencies = __get_adjacent_vtxs_graph(this_graph, a_vertex);
     vertex_n curr_vertex;
     color_t a_vertex_color;
     int colors_avail[COLOR_NUMBER] = {1,2,3,4,5,6,7,8,9};
-    int ret_color;
+    int ret_color = -1;
     int aux;
 
     if(count_available_colors(this_graph, a_vertex) > 1)
@@ -112,10 +112,14 @@ int get_available_color(GRAPH* this_graph, vertex_n a_vertex)
 	colors_avail[aux - 1] = 0;
     }
 
-    //Find only color in list.
+    //Find first color in list.
     for(int j = 0 ; j < COLOR_NUMBER ; j++)
     {
-	if (colors_avail[j] > 0) ret_color = colors_avail[j];
+	if (colors_avail[j] > 0)
+	{
+	    ret_color = colors_avail[j];
+	    break;
+	}
     }
 
     return ret_color;
@@ -153,32 +157,37 @@ graph_err_t color_solver(GRAPH* this_graph)
     while(this_graph->colored_vtxs < this_graph->size)
     {
 	int color_number = 1;
-	int saturation_dgree = -1, tempdgree; //The lowest, the most saturated.
+	int saturation_dgree = 21, tempdgree; //The lowest, the most unsaturated.
 	int index = -1;
-	int color_available = -1;
+	int available_colors = -1;
+	int color = -1;
 
 	for(int i = 0 ; i < this_graph->size ; i++)
 	{
 	    if(get_color_at_vtx_graph(this_graph, i) == 0) //If not colored.
 	    {
+		available_colors = count_available_colors(this_graph, i);
+
+		if(available_colors == 1)
+		{
+		    //Then theres only one color available. Color node.
+		    color = get_first_available_color(this_graph, i);
+		    put_color_at_vtx_graph(this_graph, i, color);
+		    continue;
+		}
+		else if(available_colors == -2)
+		{
+		    return GR_NO_SOLUTION;
+		}
+
 		tempdgree =
 		    count_adj_colored(this_graph, i);
-
-		color_available = get_available_color(this_graph, i);
-
-		if(color_available != -1)
-		{
-		    if(color_available == -2) return GR_NO_SOLUTION;
-		    //Then theres only one color available.
-		    put_color_at_vtx_graph(this_graph, i, color_available);
-		    break;
-		}
 
 		#ifdef DEBUG_COLOR_SOLVE
 		printf("Degree %d of vertex %d\n", tempdgree, i);
 		#endif
 
-		if(tempdgree > saturation_dgree)
+		if(tempdgree < saturation_dgree)
 		{
 		    saturation_dgree = tempdgree;
 		    index = i;
@@ -193,11 +202,12 @@ graph_err_t color_solver(GRAPH* this_graph)
 	#ifdef DEBUG_COLOR_SOLVE
 	printf("Convergency: degree %d of vertex %d\n", tempdgree, index);
 	#endif
-	if(index != -1)
-	while(put_color_at_vtx_graph(this_graph, index, color_number) != GR_OK)
-	{
-	    color_number++;
+	if(index == -1) {printf("Panic!\n"); exit(1);}
+	color_number = get_first_available_color(this_graph, index);
+	if(color_number > 0){
+	    put_color_at_vtx_graph(this_graph, index, color_number);
 	}
+	if(color_number == -1) return GR_NO_SOLUTION;
     }
 
     return GR_OK;
