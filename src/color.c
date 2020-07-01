@@ -173,6 +173,8 @@ graph_err_t color_solver(GRAPH* this_graph)
 		    //Then theres only one color available. Color node.
 		    color = get_first_available_color(this_graph, i);
 		    put_color_at_vtx_graph(this_graph, i, color);
+		    i = 0;
+		    saturation_dgree = 21;
 		    continue;
 		}
 		else if(available_colors == -2)
@@ -202,7 +204,7 @@ graph_err_t color_solver(GRAPH* this_graph)
 	#ifdef DEBUG_COLOR_SOLVE
 	printf("Convergency: degree %d of vertex %d\n", tempdgree, index);
 	#endif
-	if(index == -1) {printf("Panic!\n"); exit(1);}
+	if(index == -1) return GR_NO_SOLUTION;
 	color_number = get_first_available_color(this_graph, index);
 	if(color_number > 0){
 	    put_color_at_vtx_graph(this_graph, index, color_number);
