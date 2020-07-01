@@ -89,8 +89,11 @@ struct _graph
 	LIST adj_list;
 	MATRIX adj_matrix;
     };
+
     color_t* color_vtx_list;
+    color_t* color_vtx_welsh_list;
     int size; //Small technical adjustment here. TODO redo implementation;
+    int colored_vtxs;
 };
 
 /*ADJACENCE LIST*/
@@ -255,14 +258,16 @@ GRAPH* new_graph(graph_type _type, int vertex_num)
     }
 
     ret_ref->color_vtx_list = (color_t*) malloc(vertex_num * sizeof(color_t));
+    ret_ref->color_vtx_welsh_list = (color_t*) calloc(vertex_num, sizeof(color_t));
 
     //Setting color list for each node.
     for(int i = 0 ; i < vertex_num ; i++)
     {
-	ret_ref->color_vtx_list[i] = 0b0000000111111111;
+	ret_ref->color_vtx_list[i] = 0b1000000111111111;
     }
 
     ret_ref->size = vertex_num;
+    ret_ref->colored_vtxs = 0;
 
     return ret_ref;
 }
@@ -344,8 +349,6 @@ void print_graph(GRAPH* this_graph)
     __print_adj_list(&this_graph->adj_list);
     }
 }
-
-#include "color.c"
 
 #undef ABS
 

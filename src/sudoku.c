@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
 #include <gtk/gtk.h>
 
 #include "graph.h"
@@ -15,28 +18,62 @@
 #define I_FROM(F) ((int)((F%9)/3))
 #define J_FROM(F) (((int)F%9)%3)
 
+/*
+*/
+
 typedef
     struct
     {
 	int generated;
-        GObject *window;
-		GtkBuilder *builder;
+	GObject *window;
+	GtkBuilder *builder;
 
-		//Widgets
-		GObject *generate_button; //Button
-		GObject *difficulty_chooser_cbox; //Combo box
-		GObject *algo_chooser_cbox; //Combo box
-		GObject *solver_speed_sbutton; //Spin button
-		GObject *solve_button; //Button
-		GObject *subcells[SUBCELL_N]; //Pointers to subcells.
+	//Widgets
+	GObject *generate_button; //Button
+	GObject *preset_file_button; //Button
+	GObject *difficulty_chooser_cbox; //Combo box
+	GObject *algo_chooser_cbox; //Combo box
+	GObject *solver_speed_sbutton; //Spin button
+	GObject *solve_button; //Button
+	GObject *subcells[SUBCELL_N]; //Pointers to subcells.
 
-		unsigned int delay; //Execution delay.
+	unsigned int delay; //Execution delay.
 
-		//Graph related.
-		GRAPH* sudoku_graph;
+	//Graph related.
+	GRAPH* sudoku_graph;
 
+	FILE* file_preset;
     }
 main_obj_t;
+
+void __file_preset_clicked(main_obj_t* main_objs)
+{
+    GtkWidget *preset_dialog; //Preset chooser.
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+    gint res;
+
+    preset_dialog = gtk_file_chooser_dialog_new ("Open File",
+                                      GTK_WINDOW(main_objs->window),
+                                      action,
+                                      "_Cancel",
+                                      GTK_RESPONSE_CANCEL,
+                                      "_Open",
+                                      GTK_RESPONSE_ACCEPT,
+                                      NULL);
+
+    res = gtk_dialog_run (GTK_DIALOG (preset_dialog));
+    if (res == GTK_RESPONSE_ACCEPT)
+    {
+	char *filename;
+	GtkFileChooser *chooser = GTK_FILE_CHOOSER (preset_dialog);
+	filename = gtk_file_chooser_get_filename (chooser);
+	main_objs->file_preset = fopen(filename, "r");
+	g_free (filename);
+    }
+
+    gtk_widget_destroy (preset_dialog);
+
+}
 
 //Runs on every subcell, updating it.
 void __update_sudoku_squares_numbers(main_obj_t* main_objs)
@@ -57,8 +94,33 @@ void __update_sudoku_squares_numbers(main_obj_t* main_objs)
     }
 }
 
-/*Functions on buttons*/
+void __read_preset_file(main_obj_t* main_objs)
+{
+    char* line = NULL;
+    unsigned long int size = 0;
 
+    int temp_position, temp_number;
+
+    //Foreach line, will insert number at graph.
+    while(getline(&line, &size, main_objs->file_preset) != -1)
+    {
+	printf("GOT: %s", line);
+	sscanf(line, "%d %d", &temp_position, &temp_number);
+
+	//Inserting at sudoku.
+	if(put_color_at_vtx_graph(main_objs->sudoku_graph,
+				    temp_position,
+				    temp_number) != GR_OK)
+	{
+	    printf("COLOR %d COULD NOT BE ASSIGNED TO %d!\n", temp_number, temp_position);
+	}
+    }
+    __update_sudoku_squares_numbers(main_objs);
+}
+
+
+/*Functions on buttons*/
+/*
 //Randomly inserts values on subcells.
 void __generate_button_clicked(main_obj_t* main_objs)
 {
@@ -105,7 +167,7 @@ void __generate_button_clicked(main_obj_t* main_objs)
     g_free(active_text);
 
     __update_sudoku_squares_numbers(main_objs);
-}
+}*/
 
     //Changes iteration speed.
 void __solver_speed_sbutton_changed(main_obj_t* main_objs)
@@ -181,11 +243,20 @@ void __main_init(main_obj_t* main_objs)
 			NULL);
 
     //GENERATE BUTTON
+    main_objs->preset_file_button = gtk_builder_get_object (main_objs->builder,
+						"sudoku_preset_sel_button");
+    g_signal_connect_swapped (main_objs->preset_file_button,
+			"clicked",
+			G_CALLBACK (__file_preset_clicked),
+			main_objs);
+
+
+    //PRESET BUTTON
     main_objs->generate_button = gtk_builder_get_object (main_objs->builder,
 						"sudoku_generate_button");
     g_signal_connect_swapped (main_objs->generate_button,
 			"clicked",
-			G_CALLBACK (__generate_button_clicked),
+			G_CALLBACK (__read_preset_file),
 			main_objs);
 
     //SOLVE BUTTON
@@ -214,6 +285,8 @@ void __main_init(main_obj_t* main_objs)
     main_objs->algo_chooser_cbox =
 		gtk_builder_get_object (main_objs->builder,
 					"sudoku_algorithm_chooser_combo_box");
+
+    srand(time(NULL));
 }
 
 void __graph_init(main_obj_t* main_objs)
