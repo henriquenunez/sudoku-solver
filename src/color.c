@@ -129,7 +129,7 @@ graph_err_t update_color_list_at_vtx_graph(GRAPH* this_graph, vertex_n a_vertex)
     //Gets color, should be one of the previously defined macros, or 0x00
     color_t a_vertex_color = this_graph->color_vtx_list[a_vertex];
 
-    if(a_vertex_color == 0) return GR_VTX_NOT_COLORED;
+    if(a_vertex_color <= 0) return GR_VTX_NOT_COLORED;
 
     //Run on every vertex thats adjacent to 'a_vertex'
     for(int i = 0 ; i < adjacencies.size ; i++)
@@ -211,8 +211,8 @@ graph_err_t genetic_algorithm_solver(GRAPH* this_graph)
 
 	// Fixed parameters
 	const int size = this_graph->size;
-	const int max_gen = 10000;// Maximum of 10000 generations
-	const int qtd_ind = 100;// 100 individuals
+	const long int max_gen = 10000;// Maximum of 10000 generations
+	const int qtd_ind = 200;// 200 individuals
 	// Run time parameters
 	char found_solution = 0;
 
@@ -311,7 +311,7 @@ graph_err_t genetic_algorithm_solver(GRAPH* this_graph)
 		}
 
 		// Crossing and mutation
-		if(generation%1000 != 0)
+		if(generation%100 != 0)
 		{
 			for(int ind = 0; ind < qtd_ind ; ind++)
 			{
@@ -319,27 +319,30 @@ graph_err_t genetic_algorithm_solver(GRAPH* this_graph)
 					continue;
 
 				// Get 20 genes from best ind
-				for(int i = 0; i < 10; i++)
+				for(int i = 0; i < 20; i++)
 				{
 					int random_gene = rand()%size;
 					genes[ind][random_gene] = genes[best_ind][random_gene];
 				}
 			
-				// Mutate one random gene
-				int random_gene = rand()%size;
+				int genes_to_mutate = 5;
+				while(genes_to_mutate--)
+				{
+					// Mutate one random gene
+					int random_gene = rand()%size;
 
+					int row = random_gene/9;
+					int col = random_gene%9;
+					int block_row = row/3;
+					int block_col = col/3;
+					int graph_vert = (block_row*3+block_col)*9 + (row-block_row*3)*3 + (col-block_col*3);
 
-				int row = random_gene/9;
-				int col = random_gene%9;
-				int block_row = row/3;
-				int block_col = col/3;
-				int graph_vert = (block_row*3+block_col)*9 + (row-block_row*3)*3 + (col-block_col*3);
-
-				int this_color = get_color_at_vtx_graph(this_graph, graph_vert);
-				if(this_color <= 0)
-					genes[ind][random_gene] = rand()%9+1;
-				else
-					genes[ind][random_gene] = this_color;
+					int this_color = get_color_at_vtx_graph(this_graph, graph_vert);
+					if(this_color <= 0)
+						genes[ind][random_gene] = rand()%9+1;
+					else
+						genes[ind][random_gene] = this_color;
+				}
 			}
 		}
 		else
@@ -509,6 +512,58 @@ graph_err_t backtracking_solver(GRAPH* this_graph)
 			go_back = 1;
 			continue;
 		}
+	}
+	return GR_OK;
+}
+
+graph_err_t welsh_powell_solver(GRAPH* this_graph)
+{
+	VECTOR adjacencies;
+	vertex_n other_vertex;
+	int this_color;
+	int other_color;
+
+	// For each color
+	for(int color = 1 ; color <= 9; color++)
+	{
+		// For each vertex (same vertex)
+		// Because all vertices have the same degree, dont need to order
+		for(int vert = 0; vert < this_graph->size ; vert++)
+		{
+			adjacencies = __get_adjacent_vtxs_graph(this_graph, vert);
+			this_color = get_color_at_vtx_graph(this_graph, vert);
+
+			// Pass vertex already colored
+			if(this_color > 0)
+				continue;
+
+			int8_t can_color = 1;
+			// Check if it is adjacent to other vertex with this color
+			for(int j = 0; j < adjacencies.size ; j++)
+			{
+				other_vertex = adjacencies.data[j];
+				// Dont check vertex j with itself
+				if(other_vertex == vert)
+					continue;
+
+				other_color = get_color_at_vtx_graph(this_graph, other_vertex);
+				if(other_color == color && other_color>0)
+					can_color = 0;
+			}
+
+			if(can_color)
+			{
+				put_color_at_vtx_graph(this_graph, vert, color);
+			}
+		}
+	}
+
+	// Check if the sudoku is complete
+	for(int vert = 0; vert < this_graph->size ; vert++)
+	{
+		this_color = get_color_at_vtx_graph(this_graph, vert);
+		if(this_color <= 0)
+			return GR_NO_SOLUTION;
 	}
 	return GR_OK;
 }
