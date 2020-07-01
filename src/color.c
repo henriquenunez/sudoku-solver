@@ -47,7 +47,7 @@ int count_adj_colored(GRAPH* this_graph, vertex_n a_vertex)
     for(int i = 0 ; i < adjacencies.size ; i++)
     {
 	curr_vertex = adjacencies.data[i];
-
+	printf("Curr vertex: %d", curr_vertex);
 	//If adj is colored, increase count.
 	if(get_color_at_vtx_graph(this_graph, curr_vertex) != 0) count++;
     }
@@ -65,7 +65,7 @@ graph_err_t color_solver(GRAPH* this_graph)
 
 	for(int i = 0 ; i < this_graph->size ; i++)
 	{
-	    if(get_color_at_vtx_graph(this_graph, i) == -1) //Not colored.
+	    if(get_color_at_vtx_graph(this_graph, i) == 0) //Not colored.
 	    {
 		tempdgree =
 		    count_adj_colored(this_graph, i);
@@ -81,6 +81,7 @@ graph_err_t color_solver(GRAPH* this_graph)
 		}
 	    }
 	}
+
 	while(put_color_at_vtx_graph(this_graph, index, color_number) != GR_OK)
 	{
 	    color_number++;

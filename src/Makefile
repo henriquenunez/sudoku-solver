@@ -1,6 +1,6 @@
 CC=clang
-CFLAGS=-g -DMAIN_DEBUG
-LDFLAGS=-fsanitize=address
+CFLAGS=-g #-DMAIN_DEBUG
+LDFLAGS=#-fsanitize=address
 
 BUILD_DIR=./obj
 BIN_DIR=./bin

@@ -115,6 +115,8 @@ void __read_preset_file(main_obj_t* main_objs)
 	    printf("COLOR %d COULD NOT BE ASSIGNED TO %d!\n", temp_number, temp_position);
 	}
     }
+
+    free(line);
     __update_sudoku_squares_numbers(main_objs);
 }
 
@@ -186,13 +188,13 @@ void __solve_button_clicked(main_obj_t* main_objs)
 
     if(strcmp(active_text, "Brute Force") == 0)
     {
-	printf("brutoo");
+	printf("brutoo\n");
 	if(brute_force_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
 	    printf("No solution found.\n");
     }
     else if(strcmp(active_text, "Graph Coloring") == 0)
     {
-	printf("espertoo");
+	printf("espertoo\n");
 	if(color_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
 	    printf("No solution found.\n");
 

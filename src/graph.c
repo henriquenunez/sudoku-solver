@@ -226,7 +226,11 @@ VECTOR __get_adjacent_vtxs_graph(GRAPH* this_graph, vertex_n a_vertex)
 {
     VECTOR ret_vec;
 
-    if(a_vertex > this_graph->size) exit(1); //Dont pass weird stuff.
+    if(a_vertex > this_graph->size)
+    {
+	printf("WARNING weird stuff!!!\n");
+	exit(1); //Dont pass weird stuff.
+    }
 
     //We will be only using adjacence list on this project.
     if (this_graph->_type & ADJ_LIST)
@@ -285,6 +289,7 @@ void delete_graph(GRAPH* this_graph)
     }
     //this_graph->size = -1;
     free(this_graph->color_vtx_list);
+    free(this_graph->color_vtx_welsh_list);
     free(this_graph);
 }
 
