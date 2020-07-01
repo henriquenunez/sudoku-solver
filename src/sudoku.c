@@ -29,7 +29,7 @@ typedef
 	GtkBuilder *builder;
 
 	//Widgets
-	GObject *generate_button; //Button
+	GObject *reset_button; //Button
 	GObject *preset_file_button; //Button
 	GObject *difficulty_chooser_cbox; //Combo box
 	GObject *algo_chooser_cbox; //Combo box
@@ -57,10 +57,17 @@ void __update_sudoku_squares_numbers(main_obj_t* main_objs)
     {
 		//something like the following.
 		temp_color = get_color_at_vtx_graph(main_objs->sudoku_graph, i);
-		if(temp_color != -1)
+		if(temp_color > 0)
 		{
 			snprintf(temp_label, 7, "%d", temp_color);
 
+			gtk_label_set_text(GTK_LABEL(main_objs->subcells[i]),
+					temp_label);
+		}
+		else
+		{
+			temp_label[0]='-';
+			temp_label[1]='\0';
 			gtk_label_set_text(GTK_LABEL(main_objs->subcells[i]),
 					temp_label);
 		}
@@ -69,9 +76,6 @@ void __update_sudoku_squares_numbers(main_obj_t* main_objs)
 
 void __read_preset_file(main_obj_t* main_objs)
 {
-    char* line = NULL;
-    unsigned long int size = 0;
-
 	int col, row, block_col, block_row;
 	int graph_index;
 
@@ -85,6 +89,7 @@ void __read_preset_file(main_obj_t* main_objs)
 	}
 
 	// Populate with values from file 
+	fseek(main_objs->file_preset, 0, SEEK_SET);
 	while(fscanf(main_objs->file_preset, "%d", &color) == 1) 
 	{
 		if(color != 0)
@@ -104,7 +109,6 @@ void __read_preset_file(main_obj_t* main_objs)
 		index++;
     }
 
-    free(line);
     __update_sudoku_squares_numbers(main_objs);
 }
 
@@ -133,64 +137,29 @@ void __file_preset_clicked(main_obj_t* main_objs)
 
 		__read_preset_file(main_objs);
 
-		g_free (filename);
+		g_free(filename);
     }
 
     gtk_widget_destroy (preset_dialog);
 
 }
 
-/*Functions on buttons*/
-/*
-//Randomly inserts values on subcells.
-void __generate_button_clicked(main_obj_t* main_objs)
+void __reload_preset_file(main_obj_t* main_objs)
 {
-    int predefined_squares;
-    int rand_color;
-    int rand_vertex;
-    char* active_text;
-    printf("Generate button clicked!\n");
+	// Check if some file is open
+	if(main_objs->file_preset != NULL)
+		__read_preset_file(main_objs);
+	else
+	{
+		// Reset graph
+		for(int i = 0 ; i < SUBCELL_N ; i++)
+		{
+			reset_color_at_vtx_graph(main_objs->sudoku_graph, i);
+		}
+	}
+}
 
-    if(main_objs->generated) return;
-
-    main_objs->generated = 1;
-
-    active_text =
-	gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(main_objs->difficulty_chooser_cbox));
-    printf("Active text: %s\n", active_text);
-
-    //GENERATE DEFAULTS TO MEDIUM FOR NOW...
-    if(strcmp(active_text, "Medium") == 0)
-    {
-	//Sets medium parameters.
-	predefined_squares = 17;
-    }
-    else if(strcmp(active_text, "Easy") == 0)
-    {
-	predefined_squares = 25;
-    }
-    else if(strcmp(active_text, "Hard") == 0)
-    {
-	predefined_squares = 9;
-    }
-
-    //According to generate logic, will run through the entire graph randomly
-    //and will try to assign random colors to the randomly selected vertex.
-    while(predefined_squares)
-    {
-	rand_color = (rand() % COLOR_NUMBER) + 1;
-	rand_vertex = rand() % SUBCELL_N;
-	    if(put_color_at_vtx_graph(main_objs->sudoku_graph,
-				    rand_vertex,
-				    rand_color) == GR_OK) predefined_squares--;
-    }
-
-    g_free(active_text);
-
-    __update_sudoku_squares_numbers(main_objs);
-}*/
-
-    //Changes iteration speed.
+//Changes iteration speed.
 void __solver_speed_sbutton_changed(main_obj_t* main_objs)
 {
     printf("Solver speed spin changed!\n");
@@ -200,26 +169,44 @@ void __solver_speed_sbutton_changed(main_obj_t* main_objs)
 void __solve_button_clicked(main_obj_t* main_objs)
 {
     char* active_text;
+	clock_t start, end;
+    double cpu_time_used;
 
     active_text =
 	gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(main_objs->algo_chooser_cbox));
-    printf("Active text: %s\n", active_text);
+    printf("Current algorithm: %s\n", active_text);
 
     if(strcmp(active_text, "Genetic Algorithm") == 0)
     {
+		start = clock();
 		if(genetic_algorithm_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
 			printf("No solution found.\n");
+		end = clock();
     }
     else if(strcmp(active_text, "Graph Coloring") == 0)
     {
+		start = clock();
 		if(color_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
 			printf("No solution found.\n");
+		end = clock();
     }
 	else if(strcmp(active_text, "Backtracking") == 0)
 	{
+		start = clock();
 		if(backtracking_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
 			printf("No solution found.\n");
+		end = clock();
 	}
+	else if(strcmp(active_text, "Welsh Powell") == 0)
+	{
+		start = clock();
+		if(welsh_powell_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
+			printf("No solution found.\n");
+		end = clock();
+	}
+
+	double time_taken = ((double)end - start)/CLOCKS_PER_SEC;
+    printf("Time to finish: %lfs\n", time_taken);
 
     g_free(active_text);
     __update_sudoku_squares_numbers(main_objs);
@@ -247,6 +234,7 @@ void __main_init(main_obj_t* main_objs)
     GError *error = NULL;
 
     main_objs->generated = 0;
+	main_objs->file_preset = NULL;
 
     main_objs->builder = gtk_builder_new ();
     if (gtk_builder_add_from_file (main_objs->builder, "layout.glade", &error) == 0)
@@ -273,12 +261,12 @@ void __main_init(main_obj_t* main_objs)
 			main_objs);
 
 
-    //GENERATE BUTTON
-    main_objs->generate_button = gtk_builder_get_object (main_objs->builder,
-						"sudoku_generate_button");
-    g_signal_connect_swapped (main_objs->generate_button,
+    //RESET BUTTON
+    main_objs->reset_button = gtk_builder_get_object (main_objs->builder,
+						"sudoku_reset_button");
+    g_signal_connect_swapped (main_objs->reset_button,
 			"clicked",
-			G_CALLBACK (__read_preset_file),
+			G_CALLBACK (__reload_preset_file),
 			main_objs);
 
     //SOLVE BUTTON
@@ -336,7 +324,7 @@ void __graph_init(main_obj_t* main_objs)
 	{
 	    if(ITER_CELL(f, w) == f)
 	    {
-		printf("Loop on cell.\n");
+		//printf("Loop on cell.\n");
 		continue; //Dont make loops.
 	    }
 	    insert_edge_graph(main_objs->sudoku_graph,
@@ -358,7 +346,7 @@ void __graph_init(main_obj_t* main_objs)
 	    {
 		if(ITER_ROW(f, n, j) == f)
 		{
-		    printf("Loop on row.\n");
+		    //printf("Loop on row.\n");
 		    continue; //Dont make loops.
 		}
 		insert_edge_graph(main_objs->sudoku_graph,
@@ -381,7 +369,7 @@ void __graph_init(main_obj_t* main_objs)
 	    {
 		if(ITER_COL(f, m, i) == f)
 		{
-		    printf("Loop on column.\n\n\n");
+		    //printf("Loop on column.\n\n\n");
 		    continue; //Dont make loops.
 		}
 
@@ -413,6 +401,7 @@ int main(int argc, char* argv[])
 
     delete_graph(main_objs.sudoku_graph);
 
+	free(main_objs.file_preset);
     return 0;
 }
 
