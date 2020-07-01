@@ -46,6 +46,68 @@ typedef
     }
 main_obj_t;
 
+
+//Runs on every subcell, updating it.
+void __update_sudoku_squares_numbers(main_obj_t* main_objs)
+{
+    int temp_color;
+    char temp_label[8];
+
+    for(int i = 0 ; i < SUBCELL_N ; i++)
+    {
+		//something like the following.
+		temp_color = get_color_at_vtx_graph(main_objs->sudoku_graph, i);
+		if(temp_color != -1)
+		{
+			snprintf(temp_label, 7, "%d", temp_color);
+
+			gtk_label_set_text(GTK_LABEL(main_objs->subcells[i]),
+					temp_label);
+		}
+    }
+}
+
+void __read_preset_file(main_obj_t* main_objs)
+{
+    char* line = NULL;
+    unsigned long int size = 0;
+
+	int col, row, block_col, block_row;
+	int graph_index;
+
+	int color = 0;
+	int index = 0;
+
+	// Reset graph
+    for(int i = 0 ; i < SUBCELL_N ; i++)
+    {
+		reset_color_at_vtx_graph(main_objs->sudoku_graph, i);
+	}
+
+	// Populate with values from file 
+	while(fscanf(main_objs->file_preset, "%d", &color) == 1) 
+	{
+		if(color != 0)
+		{
+			row = index/9;
+			col = index%9;
+			block_row = row/3;
+			block_col = col/3;
+			graph_index = (block_row*3+block_col)*9 + (row-block_row*3)*3 + (col-block_col*3);
+
+			if(put_color_at_vtx_graph(main_objs->sudoku_graph, graph_index, color) != GR_OK)
+			{
+				printf("COLOR %d COULD NOT BE ASSIGNED TO %d!\n", color, graph_index);
+			}
+		}
+
+		index++;
+    }
+
+    free(line);
+    __update_sudoku_squares_numbers(main_objs);
+}
+
 void __file_preset_clicked(main_obj_t* main_objs)
 {
     GtkWidget *preset_dialog; //Preset chooser.
@@ -64,62 +126,19 @@ void __file_preset_clicked(main_obj_t* main_objs)
     res = gtk_dialog_run (GTK_DIALOG (preset_dialog));
     if (res == GTK_RESPONSE_ACCEPT)
     {
-	char *filename;
-	GtkFileChooser *chooser = GTK_FILE_CHOOSER (preset_dialog);
-	filename = gtk_file_chooser_get_filename (chooser);
-	main_objs->file_preset = fopen(filename, "r");
-	g_free (filename);
+		char *filename;
+		GtkFileChooser *chooser = GTK_FILE_CHOOSER (preset_dialog);
+		filename = gtk_file_chooser_get_filename (chooser);
+		main_objs->file_preset = fopen(filename, "r");
+
+		__read_preset_file(main_objs);
+
+		g_free (filename);
     }
 
     gtk_widget_destroy (preset_dialog);
 
 }
-
-//Runs on every subcell, updating it.
-void __update_sudoku_squares_numbers(main_obj_t* main_objs)
-{
-    int temp_color;
-    char temp_label[8];
-
-    for(int i = 0 ; i < SUBCELL_N ; i++)
-    {
-		//something like the following.
-		temp_color = get_color_at_vtx_graph(main_objs->sudoku_graph, i);
-		if(temp_color != -1)
-		{
-			snprintf(temp_label, 7, "%d", temp_color);
-			gtk_label_set_text(GTK_LABEL(main_objs->subcells[i]),
-					temp_label);
-		}
-    }
-}
-
-void __read_preset_file(main_obj_t* main_objs)
-{
-    char* line = NULL;
-    unsigned long int size = 0;
-
-    int temp_position, temp_number;
-
-    //Foreach line, will insert number at graph.
-    while(getline(&line, &size, main_objs->file_preset) != -1)
-    {
-	printf("GOT: %s", line);
-	sscanf(line, "%d %d", &temp_position, &temp_number);
-
-	//Inserting at sudoku.
-	if(put_color_at_vtx_graph(main_objs->sudoku_graph,
-				    temp_position,
-				    temp_number) != GR_OK)
-	{
-	    printf("COLOR %d COULD NOT BE ASSIGNED TO %d!\n", temp_number, temp_position);
-	}
-    }
-
-    free(line);
-    __update_sudoku_squares_numbers(main_objs);
-}
-
 
 /*Functions on buttons*/
 /*
@@ -186,22 +205,23 @@ void __solve_button_clicked(main_obj_t* main_objs)
 	gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(main_objs->algo_chooser_cbox));
     printf("Active text: %s\n", active_text);
 
-    if(strcmp(active_text, "Brute Force") == 0)
+    if(strcmp(active_text, "Genetic Algorithm") == 0)
     {
-	printf("brutoo\n");
-	if(brute_force_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
-	    printf("No solution found.\n");
+		if(genetic_algorithm_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
+			printf("No solution found.\n");
     }
     else if(strcmp(active_text, "Graph Coloring") == 0)
     {
-	printf("espertoo\n");
-	if(color_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
-	    printf("No solution found.\n");
-
+		if(color_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
+			printf("No solution found.\n");
     }
+	else if(strcmp(active_text, "Backtracking") == 0)
+	{
+		if(backtracking_solver(main_objs->sudoku_graph) == GR_NO_SOLUTION)
+			printf("No solution found.\n");
+	}
 
     g_free(active_text);
-
     __update_sudoku_squares_numbers(main_objs);
 }
 
@@ -212,13 +232,13 @@ void __init_squares(main_obj_t* main_objs)
 
     for(int f = 0 ; f < SUBCELL_N ; f++)
     {
-	snprintf(subcell_indexer,
-		    22,
-		    "subcell_%d_%d_%d_%d_label",
-		    M_FROM(f), N_FROM(f), I_FROM(f), J_FROM(f));
-	main_objs->subcells[f] = gtk_builder_get_object(main_objs->builder,
-							subcell_indexer);
-	gtk_label_set_text(GTK_LABEL(main_objs->subcells[f]), "-");
+		snprintf(subcell_indexer,
+				22,
+				"subcell_%d_%d_%d_%d_label",
+				M_FROM(f), N_FROM(f), I_FROM(f), J_FROM(f));
+		main_objs->subcells[f] = gtk_builder_get_object(main_objs->builder,
+								subcell_indexer);
+		gtk_label_set_text(GTK_LABEL(main_objs->subcells[f]), "-");
     }
 }
 
@@ -244,7 +264,7 @@ void __main_init(main_obj_t* main_objs)
 			G_CALLBACK (gtk_main_quit),
 			NULL);
 
-    //GENERATE BUTTON
+    //PRESET BUTTON
     main_objs->preset_file_button = gtk_builder_get_object (main_objs->builder,
 						"sudoku_preset_sel_button");
     g_signal_connect_swapped (main_objs->preset_file_button,
@@ -253,7 +273,7 @@ void __main_init(main_obj_t* main_objs)
 			main_objs);
 
 
-    //PRESET BUTTON
+    //GENERATE BUTTON
     main_objs->generate_button = gtk_builder_get_object (main_objs->builder,
 						"sudoku_generate_button");
     g_signal_connect_swapped (main_objs->generate_button,
