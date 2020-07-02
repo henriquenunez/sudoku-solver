@@ -1024,15 +1024,11 @@
             <property name="can_focus">False</property>
             <property name="homogeneous">True</property>
             <child>
-              <object class="GtkComboBoxText" id="sudoku_difficulty_chooser_combo_box">
+              <object class="GtkButton" id="sudoku_preset_sel_button">
+                <property name="label" translatable="yes">Preset</property>
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="active">1</property>
-                <items>
-                  <item translatable="yes">Easy</item>
-                  <item translatable="yes">Medium</item>
-                  <item translatable="yes">Hard</item>
-                </items>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1041,8 +1037,8 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="sudoku_generate_button">
-                <property name="label" translatable="yes">Generate</property>
+              <object class="GtkButton" id="sudoku_reset_button">
+                <property name="label" translatable="yes">Reset</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -1063,6 +1059,24 @@
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBoxText" id="sudoku_algorithm_chooser_combo_box">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="active">1</property>
+                <items>
+                  <item translatable="yes">Genetic Algorithm</item>
+                  <item translatable="yes">Graph Coloring</item>
+                  <item translatable="yes">Backtracking</item>
+                  <item translatable="yes">Welsh Powell</item>
+                </items>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>

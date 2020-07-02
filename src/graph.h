@@ -7,10 +7,12 @@ typedef int color_t;
 typedef enum
 {
     GR_OK,
+    GR_ERROR,
     GR_VTX_OUT_BOUNDS,
     GR_VTX_COLORED,
     GR_VTX_NOT_COLORED,
-    GR_COLOR_INVALID
+    GR_COLOR_INVALID,
+    GR_NO_SOLUTION
 } graph_err_t;
 
 typedef unsigned char graph_type;
@@ -29,7 +31,12 @@ void delete_graph(GRAPH*);
 //Graph colouring.
 graph_err_t put_color_at_vtx_graph(GRAPH*, vertex_n, int color);
 int get_color_at_vtx_graph(GRAPH*, vertex_n); //returns -1 in the undefined case.
+graph_err_t reset_color_at_vtx_graph(GRAPH*, vertex_n);
 graph_err_t auto_color_graph(GRAPH*);
+graph_err_t backtracking_solver(GRAPH*);
+graph_err_t genetic_algorithm_solver(GRAPH*);
+graph_err_t welsh_powell_solver(GRAPH*);
+graph_err_t color_solver(GRAPH*);
 
 #endif
 

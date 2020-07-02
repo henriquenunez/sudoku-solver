@@ -27,8 +27,8 @@ VECTOR __realloc_vector(VECTOR* this_vector)
     int j = 0;
     for(int i = 0 ; i < this_vector->size ; i++)
     {
-    if (this_vector->data[i] == -1) continue;
-    temp_vertexes[j++] = this_vector->data[i];
+		if (this_vector->data[i] == -1) continue;
+		temp_vertexes[j++] = this_vector->data[i];
     }
 
     //Copies data into new vector
@@ -89,8 +89,11 @@ struct _graph
 	LIST adj_list;
 	MATRIX adj_matrix;
     };
+
     color_t* color_vtx_list;
+    color_t* color_vtx_welsh_list;
     int size; //Small technical adjustment here. TODO redo implementation;
+    int colored_vtxs;
 };
 
 /*ADJACENCE LIST*/
@@ -108,8 +111,8 @@ LIST new_adj_list(int size)
 void delete_adj_list(LIST *this_list)
 {
     for (int i = 0 ; i < this_list->size ; i++) {
-    //accesses i-th position of vectors array and frees data
-    free(this_list->vertexes[i].data);
+		//accesses i-th position of vectors array and frees data
+		free(this_list->vertexes[i].data);
     }
     free(this_list->vertexes);
 }
@@ -223,12 +226,16 @@ VECTOR __get_adjacent_vtxs_graph(GRAPH* this_graph, vertex_n a_vertex)
 {
     VECTOR ret_vec;
 
-    if(a_vertex > this_graph->size) exit(1); //Dont pass weird stuff.
+    if(a_vertex > this_graph->size)
+    {
+		printf("WARNING weird stuff!!!\n");
+		exit(1); //Dont pass weird stuff.
+    }
 
     //We will be only using adjacence list on this project.
     if (this_graph->_type & ADJ_LIST)
     {
-	ret_vec = this_graph->adj_list.vertexes[a_vertex];
+		ret_vec = this_graph->adj_list.vertexes[a_vertex];
     }
     else if(this_graph->_type & ADJ_MATRIX)
 	;
@@ -255,7 +262,16 @@ GRAPH* new_graph(graph_type _type, int vertex_num)
     }
 
     ret_ref->color_vtx_list = (color_t*) calloc(vertex_num, sizeof(color_t));
+    ret_ref->color_vtx_welsh_list = (color_t*) calloc(vertex_num, sizeof(color_t));
+
+    //Setting color list for each node.
+    //for(int i = 0 ; i < vertex_num ; i++)
+    //{
+	//	ret_ref->color_vtx_list[i] = 0b1000000111111111;
+    //}
+
     ret_ref->size = vertex_num;
+    ret_ref->colored_vtxs = 0;
 
     return ret_ref;
 }
@@ -273,6 +289,7 @@ void delete_graph(GRAPH* this_graph)
     }
     //this_graph->size = -1;
     free(this_graph->color_vtx_list);
+    free(this_graph->color_vtx_welsh_list);
     free(this_graph);
 }
 
@@ -337,8 +354,6 @@ void print_graph(GRAPH* this_graph)
     __print_adj_list(&this_graph->adj_list);
     }
 }
-
-#include "color.c"
 
 #undef ABS
 

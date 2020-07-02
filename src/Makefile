@@ -1,6 +1,6 @@
 CC=clang
-CFLAGS=-g -DMAIN_DEBUG
-LDFLAGS=-fsanitize=address
+CFLAGS=-g #-DDEBUG_COLOR_SOLVE #-DMAIN_DEBUG
+LDFLAGS=#-fsanitize=address
 
 BUILD_DIR=./obj
 BIN_DIR=./bin
@@ -12,8 +12,8 @@ OBJS=
 
 all: dirs build
 
-build: graph.o
-	${CC} ${MCFLAGS} sudoku.c ${BUILD_DIR}/graph.o ${OBJS} -o ${BIN_DIR}/sudoku ${MLDFLAGS}
+build: graph.o color.o
+	${CC} ${MCFLAGS} sudoku.c ${BUILD_DIR}/color.o ${OBJS} -o ${BIN_DIR}/sudoku ${MLDFLAGS}
 
 tests:
 
@@ -32,3 +32,5 @@ clean:
 graph.o:
 	${CC} ${CFLAGS} -c graph.c -o ${BUILD_DIR}/graph.o ${LDFLAGS}
 
+color.o:
+	${CC} ${CFLAGS} -c color.c -o ${BUILD_DIR}/color.o ${LDFLAGS}
