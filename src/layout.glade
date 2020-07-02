@@ -1065,7 +1065,7 @@
               <object class="GtkComboBoxText" id="sudoku_algorithm_chooser_combo_box">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="active">3</property>
+                <property name="active">1</property>
                 <items>
                   <item translatable="yes">Genetic Algorithm</item>
                   <item translatable="yes">Graph Coloring</item>
